@@ -7,13 +7,13 @@ const Transactions = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'availability':
-        return <div className="alert alert-primary">📚 Checking if the book is available...</div>;
+        return <div className="alert alert-primary"> Checking if the book is available...</div>;
       case 'issue':
-        return <div className="alert alert-success">📝 Issue book form or logic goes here.</div>;
+        return <div className="alert alert-success">Issue book form or logic goes here.</div>;
       case 'return':
-        return <div className="alert alert-warning">📦 Return book process displayed here.</div>;
+        return <div className="alert alert-warning">Return book process displayed here.</div>;
       case 'fine':
-        return <div className="alert alert-danger">💰 Fine payment options shown here.</div>;
+        return <div className="alert alert-danger"> Fine payment options shown here.</div>;
       default:
         return <div className="text-muted">Select a transaction from the sidebar.</div>;
     }

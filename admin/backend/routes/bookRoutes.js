@@ -102,43 +102,52 @@ router.post('/transactions/return', async (req, res) => {
 });
 router.post('/transactions/fine', async (req, res) => {
   try {
-  console.log(req.body)
     const {
-      bookName,
       serialNumber,
-      issueDate,
-      returnDate,
       actualReturnDate,
       fine,
       finePaid,
       remarks
     } = req.body;
 
-    if (!bookName || !serialNumber || !issueDate || !returnDate || !actualReturnDate) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!serialNumber || !actualReturnDate) {
+      return res.status(400).json({ message: 'Missing required fields: serialNumber or actualReturnDate' });
     }
 
-    const txn = await Transaction.findOne({
-      bookName,
-      serialNumber,
-    });
-   console.log(txn)
+    // Find the book by serial number
+    const book = await Book.findOne({ serialNumber });
+
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found with the provided serial number' });
+    }
+
+    // Find the transaction using serialNumber and bookName (or bookId if preferred)
+    const txn = await Transaction.findOne({ serialNumber, bookName: book.bookName });
+
     if (!txn) {
-      return res.status(404).json({ message: 'Transaction not found for the provided details' });
+      return res.status(404).json({ message: 'Transaction not found for the provided book' });
     }
 
-    
+    // Fill in missing fields from the book
+    txn.bookId = book._id;
+    txn.bookName = book.bookName;
+    txn.authorName = book.authorName;
+    txn.issueDate = book.issueDate;
+    txn.expectedReturnDate = book.returnDate;
+
+    // Update fine-related fields
     txn.actualReturnDate = actualReturnDate;
     txn.fine = fine;
     txn.finePaid = finePaid;
     txn.remarks = remarks || '';
+    txn.isReturned = true;
 
     await txn.save();
 
-    res.status(200).json({ message: 'Fine updated successfully', transaction: txn });
+    res.status(200).json({ message: 'Fine and return details updated successfully', transaction: txn });
   } catch (error) {
     console.error('Fine Submission Error:', error);
-    res.status(500).json({ message: 'Server error while updating fine' });
+    res.status(500).json({ message: 'Server error while updating fine', error });
   }
 });
 export default router;
